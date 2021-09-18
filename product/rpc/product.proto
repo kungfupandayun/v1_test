@@ -4,6 +4,9 @@ package product;
 
 option go_package = "/rpc;productrpc";
 
+
+
+
 // Product a physical item sold by e-merchants.
 message Product {
     // Unique identifier of the product. Has the following format: [[:alnum:]]{4}-[[:alnum:]]{6}-[[:alnum:]]{4}.
@@ -20,6 +23,8 @@ message Product {
 service Service {
     // Fetch all existing products in the system.
     rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+    // Fetch one product by id
+    rpc FetchProduct(FetchProductsRequest) returns (Product);
 }
 
 message ListProductsRequest {}
@@ -27,3 +32,9 @@ message ListProductsRequest {}
 message ListProductsResponse {
     repeated Product products = 1;
 }
+
+message FetchProductsRequest {
+    string id = 1;
+}
+
+

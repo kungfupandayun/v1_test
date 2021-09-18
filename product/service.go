@@ -21,3 +21,8 @@ func NewService(s store.ProductStore) *service {
 func (s *service) ListProducts(ctx context.Context, r *productrpc.ListProductsRequest) (*productrpc.ListProductsResponse, error) {
 	return &productrpc.ListProductsResponse{Products: s.s.Products()}, nil
 }
+
+// Fetch one product through its id
+func (s *service) FetchProduct(ctx context.Context, r *productrpc.FetchProductsRequest) (*productrpc.Product, error) {
+	return s.s.Product(r.Id)
+}
