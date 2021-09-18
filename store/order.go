@@ -32,7 +32,7 @@ func NewOrderStore() OrderStore {
 	}
 }
 
-// Retrieve an order by ID from the store.
+// Retrieve all orders in the store, sorted by id asc.
 func (s *orderStore) Orders() []*orderrpc.Order {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
@@ -49,7 +49,7 @@ func (s *orderStore) Orders() []*orderrpc.Order {
 	return ods
 }
 
-// Retrieve all orders in the store, sorted by id asc.
+// Retrieve an order by ID from the store.
 func (s *orderStore) Order(id string) (*orderrpc.Order, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()

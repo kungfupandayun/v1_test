@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/bigbluedisco/tech-challenge/backend/v1/order"
+	orderpb "github.com/bigbluedisco/tech-challenge/backend/v1/order/rpc"
 	"github.com/bigbluedisco/tech-challenge/backend/v1/product"
 	productpb "github.com/bigbluedisco/tech-challenge/backend/v1/product/rpc"
 	"github.com/bigbluedisco/tech-challenge/backend/v1/store"
@@ -15,6 +17,7 @@ import (
 func main() {
 	log := log.Default()
 	ps := store.NewProductStore()
+	ords := store.NewOrderStore()
 
 	lis, err := net.Listen("tcp", "0.0.0.0:8000")
 	if err != nil {
@@ -28,6 +31,9 @@ func main() {
 
 	prd := product.NewService(ps)
 	productpb.RegisterServiceServer(srv, prd)
+
+	ord := order.NewService(ords)
+	orderpb.RegisterServiceServer(srv, ord)
 
 	go func() {
 		log.Println("server started on port 8000...")
