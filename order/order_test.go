@@ -73,7 +73,7 @@ func TestOrder_NameAbsence_NOK(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestOrder_PostcodeError_NOK(t *testing.T) {
+func TestOrder_PostcodeError_OK(t *testing.T) {
 
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
@@ -130,7 +130,7 @@ func TestOrder_AddrError_OK(t *testing.T) {
 
 }
 
-func Test_Addr_NotFound(t *testing.T) {
+func Test_Addr_NotComplete(t *testing.T) {
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
 	require.NoError(t, err)
@@ -146,6 +146,23 @@ func Test_Addr_NotFound(t *testing.T) {
 	// Test for output here.
 	require.Error(t, err)
 
+}
+
+func Test_Addr_NotFound(t *testing.T) {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithInsecure())
+	require.NoError(t, err)
+
+	defer conn.Close()
+	client := orderrpc.NewServiceClient(conn)
+	var customer = &orderrpc.Order_Customer{FirstName: "Joe", LastName: "John"}
+	var addr = &orderrpc.Order_ShippingAddress{Address: "7", PostalCode: "25", City: "Serona", Country: "France"}
+	var pd_q = [](*orderrpc.Order_ProductQuantity){{Pid: "PIPR-JACKET-SIZM", Quantity: 5}, {Pid: "PIPR-MOSPAD-0000", Quantity: 5}, {Pid: "PIPR-JOGCAS-SIZL", Quantity: 5}}
+
+	resp, err := client.CreateOrder(ctx, &orderrpc.Order{Id: "1", C: customer, Addr: addr, ProdQuant: pd_q})
+	log.Printf("Response: %+v", resp)
+	// Test for output here.
+	require.Error(t, err)
 }
 
 func TestOrder_ProductError_NOK(t *testing.T) {

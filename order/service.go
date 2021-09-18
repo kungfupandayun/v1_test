@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	orderrpc "github.com/bigbluedisco/tech-challenge/backend/v1/order/rpc"
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 
@@ -36,10 +37,7 @@ func (s *service) ListOrders(ctx context.Context, r *orderrpc.ListOrdersRequest)
 
 // Remove diacritics
 func removeDiacritics(s string) string {
-	isMn := func(r rune) bool {
-		return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
-	}
-	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
+	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	result, _, _ := transform.String(t, s)
 	return result
 }
@@ -91,9 +89,13 @@ func verifyAddr(order *orderrpc.Order) error {
 	postcode := order.Addr.PostalCode
 	addr := removeDiacritics(order.Addr.Address)
 
+	if city == "" || postcode == "" || addr == "" {
+		return errors.New("address not complete")
+	}
+
 	query := fmt.Sprintf("https://api-adresse.data.gouv.fr/search/?" +
 		"q=" + url.QueryEscape(addr) + "&" +
-		"city=" + url.QueryEscape(city) + "&" +
+		"city=" + url.QueryEscape(city) + "||" +
 		"postcode=" + url.QueryEscape(postcode))
 
 	fmt.Println(query)
