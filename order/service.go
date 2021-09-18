@@ -10,8 +10,11 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"unicode"
 
 	orderrpc "github.com/bigbluedisco/tech-challenge/backend/v1/order/rpc"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 
 	"github.com/bigbluedisco/tech-challenge/backend/v1/store"
 )
@@ -29,6 +32,16 @@ func NewService(s store.OrderStore) *service {
 // Fetch all existing orders in the system.
 func (s *service) ListOrders(ctx context.Context, r *orderrpc.ListOrdersRequest) (*orderrpc.ListOrdersResponse, error) {
 	return &orderrpc.ListOrdersResponse{Orders: s.s.Orders()}, nil
+}
+
+// Remove diacritics
+func removeDiacritics(s string) string {
+	isMn := func(r rune) bool {
+		return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
+	}
+	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
+	result, _, _ := transform.String(t, s)
+	return result
 }
 
 // Quest to website (return addr, postcode,city )
@@ -74,14 +87,16 @@ func verifyAddr(order *orderrpc.Order) error {
 	order.Addr.Country = "France"
 
 	// 2) Get Address correct
-	city := order.Addr.City
+	city := removeDiacritics(order.Addr.City)
 	postcode := order.Addr.PostalCode
-	addr := order.Addr.Address
+	addr := removeDiacritics(order.Addr.Address)
 
 	query := fmt.Sprintf("https://api-adresse.data.gouv.fr/search/?" +
 		"q=" + url.QueryEscape(addr) + "&" +
-		"city=" + url.QueryEscape(city) + "||" +
+		"city=" + url.QueryEscape(city) + "&" +
 		"postcode=" + url.QueryEscape(postcode))
+
+	fmt.Println(query)
 
 	addrq, codeq, cityq, err := quest(query)
 	if err != nil {

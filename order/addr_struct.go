@@ -13,8 +13,8 @@ type Properties struct {
 	Name        string
 	PostCode    string
 	CityCode    string
-	x           float32
-	y           float32
+	x           float64
+	y           float64
 	City        string
 	Context     string
 	Importance  float64
